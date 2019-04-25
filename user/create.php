@@ -14,30 +14,14 @@
 
     $data = json_decode(file_get_contents("php://input"));
 
-    if ($data == null) {
-        $database->send_json('', 'fname, lname, email, password must be specified');
-        die();
+    try {
+        $user->fname = $database->ternary($data, 'fname', 'First name is not set');
+        $user->lname = $database->ternary($data, 'lname', 'Last name is not set');
+        $user->email = $database->ternary($data, 'email', 'Email is not set');
+        $user->password = $database->ternary($data, 'password', 'Password is not set');
+        $user->active = true;
+        $user->create();
+        $database->send_json('User is created', '');
+    } catch (PDOException $e) {
+        $database->send_json('', 'User is not created');
     }
-
-    $user->fname = $data->fname;
-    $user->lname = $data->lname;
-    $user->email = $data->email;
-    $user->password = $data->password;
-
-    if ($user->fname === null ||
-        $user->lname === null ||
-        $user->email === null ||
-        $user->password === null) {
-        $database->send_json('', 'fname, lname, email, password must not be null');
-        die();
-    }
-
-    $message = '';
-    $error = $user->create();
-
-    if ($error === '') {
-        $message = 'User successfully created';
-    } else {
-        $message = 'User not created';
-    }
-    $database->send_json($message, $error);

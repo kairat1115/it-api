@@ -25,4 +25,11 @@ class Database {
             'error'=>$error
         ));
     }
+
+    public function ternary($obj, $prop, $errorMsg) {
+        if (isset($obj->$prop)) {
+            return $obj->$prop;
+        }
+        throw new PDOException($errorMsg, 1337);
+    }
 }
